@@ -1,0 +1,44 @@
+    switch(state){
+      case 0:
+      if ( UCSR0A & (1<<RXC0)){//если поришёл байт
+        needed_page=UDR0;
+        needed_page-=0x30;
+		
+        NRF_TransmitMode();//передача
+        NRF_WritePLD(&needed_page, 1);
+        NRF_WriteData();*/
+		
+        Serial.print("D");
+        state=1;
+        }
+      
+      break;
+      case 1:
+      if(page_counter<needed_page){
+      while ( UCSR0A & (1<<RXC0)){//если пришёл байт
+        temp=UDR0;
+        memory[counter]=temp;
+        Serial.write(temp);
+        if(counter>=63){
+          counter=0;
+          page_counter++;
+		  
+          for(int i=0;i<64;i++){//передача
+            NRF_TransmitMode();
+            NRF_WritePLD(&memory[i], 1);
+            NRF_WriteData();
+            }
+			
+          Serial.print("+");
+        }else{
+        counter++;
+        }
+        }
+      }else{
+        state=0;
+        counter=0;
+        Serial.print("F");
+        }
+      break;
+      
+      }
